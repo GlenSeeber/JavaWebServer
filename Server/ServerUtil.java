@@ -23,6 +23,8 @@ public class ServerUtil {
 	
 	public String 			inBuff = "";
 	public byte[] 			outBuff = new byte[MAX_SIZE];
+
+	public String			resourceFolder = "/home/river/git/JavaWebServer/files";
 	
 
 	//Handles the individual client
@@ -64,14 +66,14 @@ public class ServerUtil {
 					filename = inBuff.substring(start);
 				}
 				//try to open and read the requested resource
-				File resource = new File("files"+filename);
-				System.out.println("files"+filename);
+				File resource = new File(resourceFolder+filename);
+				//System.out.println("files"+filename);
 				fileStream = new FileInputStream(resource);
 
 			} catch(FileNotFoundException e){	//404 error
 				System.out.println(e);
 				//set 404 as resource
-				File resource = new File("files/404.html");
+				File resource = new File(resourceFolder+"/404.html");
 				try{
 					fileStream = new FileInputStream(resource);
 				}catch(FileNotFoundException e1){	//in case 404 doesn't exist
