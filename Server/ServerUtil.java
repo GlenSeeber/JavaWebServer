@@ -51,24 +51,37 @@ public class ServerUtil {
 		if (inBuff.startsWith("GET")){
 			String filename = "";
 			try{
-				//make a substring of just "/[resource]", and ending at the newline or space
-				try{
-					//try to find a space after the filename
-					filename = inBuff.substring(4, inBuff.indexOf(" ", 4));
-				} catch (Exception e){
-					System.out.println(e);
-					try{
-						//try to find a newline after filename
-						filename = inBuff.substring(4, inBuff.indexOf("\n", 4));
-					} catch (Exception e1){
-						System.out.println(e1);
-						filename = inBuff.substring(4); //TODO  deal with this
-					}
+				//make a substring of just "[resource]", and ending at the newline or space
+				int start = inBuff.indexOf("/");
+				int end = inBuff.indexOf(" ", start);
+				char[] checklist = {' ', '\n'};
+				for(int i = 0; end == -1 && i < checklist.length; ++i){
+					end = inBuff.indexOf(checklist[i], start);
+				}
+				if(end != -1){
+					filename = inBuff.substring(start, end);
+				} else{
+					filename = inBuff.substring(start);
 				}
 				//try to open and read the requested resource
 				File resource = new File("files"+filename);
+				System.out.println("files"+filename);
 				fileStream = new FileInputStream(resource);
-				//write it to a byte array
+
+			} catch(FileNotFoundException e){	//404 error
+				System.out.println(e);
+				//set 404 as resource
+				File resource = new File("files/404.html");
+				try{
+					fileStream = new FileInputStream(resource);
+				}catch(FileNotFoundException e1){	//in case 404 doesn't exist
+					System.out.println(e);
+				}
+				System.out.println("File couldn't be found, sending error to client");
+			}
+			//send whatever file we ended up with
+			try{
+				//write file to a byte array
 				int n;
 				//continue writing from fileStream onto outBuff until fileStream is out of data
 				while((n = fileStream.read(outBuff) ) > 0){
@@ -76,15 +89,11 @@ public class ServerUtil {
 					output.write(outBuff, 0, n);
 					output.flush();
 				}
-			} catch(FileNotFoundException e){
-				System.out.println(e);
-				//output.write("404 Error", 0, 10);		TODO fix this
-				System.out.println("File couldn't be found, sending error to client");
-			} catch(Exception e){
+			}catch(IOException e){
 				System.out.println(e);
 			}
 		}
-		
+
 		//close file streams
 		try{
 			output.close();
