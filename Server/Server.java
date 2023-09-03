@@ -18,7 +18,7 @@ public class Server {
 			System.out.printf("Error setting up listening socket: %s", e);
 		}
 		while(true){
-			System.out.println("Wating for Clients...");
+			System.out.println("\n\nWating for new Clients...");
 			try{
 				//accept client
 				utility.sock = utility.server.accept();

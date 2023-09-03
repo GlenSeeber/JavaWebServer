@@ -19,92 +19,82 @@ public class ServerUtil {
 	public Socket			sock = null;
 	public BufferedReader	input = null;
 	public OutputStream 	output = null;
+	public FileInputStream fileStream = null;
 	
 	public String 			inBuff = "";
 	public byte[] 			outBuff = new byte[MAX_SIZE];
 	
+
 	//Handles the individual client
 	public int handleClient(){
-			try{
-				
-				//setup input and output pipelines
-				input = new BufferedReader(new	InputStreamReader(sock.getInputStream()));
-				output = new BufferedOutputStream(sock.getOutputStream());
+		//setup input and output pipelines
+		try{
+			input = new BufferedReader(new	InputStreamReader(sock.getInputStream()));
+			output = new BufferedOutputStream(sock.getOutputStream());
+		} catch(IOException e){
+			System.out.printf("Socket Error during client setup: %s\n", e);
+			return -1;
+		}
 
-			} catch(IOException e){
-				System.out.printf("Socket Error during client setup: %s\n", e);
-				return -1;
-			}
-			
-			try {
-				//input buffer for what transmission we recieve
-				inBuff = input.readLine();
-				//display the transmission
-				System.out.printf("[CLIENT]: %s\n", inBuff);
+		//read the input
+		try {
+			inBuff = input.readLine(); //TODO make this read the whole transmission, not just one line
+		}
+		catch (IOException e) {
+			System.out.println(e);
+		}
 		
-				if (inBuff.startsWith("GET")){
-					String filename = "";
-					FileInputStream fileStream = null;
+		//display the transmission
+		System.out.printf("[CLIENT]: %s\n", inBuff);
+
+		//GET requests
+		if (inBuff.startsWith("GET")){
+			String filename = "";
+			try{
+				//make a substring of just "/[resource]", and ending at the newline or space
+				try{
+					//try to find a space after the filename
+					filename = inBuff.substring(4, inBuff.indexOf(" ", 4));
+				} catch (Exception e){
+					System.out.println(e);
 					try{
-						//make a substring of just "/[resource]", and ending at the newline or space
-						try{
-							//try to find a space after the filename
-							filename = inBuff.substring(4, inBuff.indexOf(" ", 4));
-						} catch (Exception e){
-							System.out.println(e);
-							try{
-								//try to find a newline after filename
-								filename = inBuff.substring(4, inBuff.indexOf("\n", 4));
-							} catch (Exception e1){
-								System.out.println(e1);
-								filename = inBuff.substring(4); //TODO  deal with this
-							}
-						}
-						//try to open and read the requested resource
-						System.out.println(filename);
-						File resource = new File("files"+filename);
-						fileStream = new FileInputStream(resource);
-						int fileSize = fileStream.available();
-						//write it to a byte array
-						int n;
-						while((n = fileStream.read(outBuff) ) > 0){
-							output.write(outBuff, 0, n);
-							output.flush();
-						}
-						output.close();
-		
-					} catch(FileNotFoundException e){
-						System.out.println(e);
-						//output.write("404 Error", 0, 10);		TODO fix this
-						System.out.println("File couldn't be found, sending error to client");
-					} catch(Exception e){
-						System.out.println(e);
-					} finally{
-						if(fileStream != null){
-							fileStream.close();
-						}
+						//try to find a newline after filename
+						filename = inBuff.substring(4, inBuff.indexOf("\n", 4));
+					} catch (Exception e1){
+						System.out.println(e1);
+						filename = inBuff.substring(4); //TODO  deal with this
 					}
 				}
-		
-				else{
-					//output.println("Hello Client!"); TODO fix this
+				//try to open and read the requested resource
+				File resource = new File("files"+filename);
+				fileStream = new FileInputStream(resource);
+				//write it to a byte array
+				int n;
+				//continue writing from fileStream onto outBuff until fileStream is out of data
+				while((n = fileStream.read(outBuff) ) > 0){
+					//write n bytes to output (the socket/client)
+					output.write(outBuff, 0, n);
+					output.flush();
 				}
-			} catch (IOException e) {
+			} catch(FileNotFoundException e){
+				System.out.println(e);
+				//output.write("404 Error", 0, 10);		TODO fix this
+				System.out.println("File couldn't be found, sending error to client");
+			} catch(Exception e){
 				System.out.println(e);
 			}
+		}
 		
-			//make sure to close your fileDescriptors
-			try{
-				output.close();
-				input.close();
-				sock.close();
-			} catch (IOException e){
-				System.out.printf("Error when closing sockets and/or I/O streams: %s\n", e);
-			}
-		
-			//start all over again, go back to new clients
-			System.out.println("\n\nwaiting for new clients...");
-			return 0;
+		//close file streams
+		try{
+			output.close();
+			input.close();
+			sock.close();
+			fileStream.close();
+		} catch (IOException e){
+			System.out.printf("Error when closing sockets and/or I/O streams: %s\n", e);
+		}
+		return 0;
 	}
 
 	public void quitServer(){
