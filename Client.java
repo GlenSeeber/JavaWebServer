@@ -41,8 +41,15 @@ public class Client {
 				System.out.print("> ");
 				buff = scnr.nextLine();
 				output.println(buff);
-				//essentially this just keeps reading lines until readLine() returns null
-				while((buff += input.readLine() ) != null);
+				//essentially this just keeps reading bytes until read() returns -1
+				while(true){
+					int test = input.read();
+					if (test == -1){
+						break;
+					}
+					buff += (char)test;
+				}
+				
 				System.out.printf("[SERVER]: %s\n", buff);
 
 			} catch(IOException e) {
