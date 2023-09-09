@@ -1,5 +1,6 @@
-package Server;
+package server;
 
+import java.nio.charset.*;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +15,7 @@ import java.net.Socket;
 public class ServerUtil {
     //variables
 	public final int		MAX_SIZE = 2048;
-	
+
 	public ServerSocket		server = null;
 	public Socket			sock = null;
 	public BufferedReader	input = null;
@@ -25,7 +26,7 @@ public class ServerUtil {
 	public byte[] 			outBuff = new byte[MAX_SIZE];
 
 	public String			resourceFolder = "/home/river/git/JavaWebServer/files";
-	
+	public String			status = "200 OK";	
 
 	//Handles the individual client
 	public int handleClient(){
@@ -69,6 +70,7 @@ public class ServerUtil {
 				System.out.println(e);
 				//set 404 as resource
 				File resource = new File(resourceFolder+"/404.html");
+				status = "404 Not Found";
 				try{
 					fileStream = new FileInputStream(resource);
 				}catch(FileNotFoundException e1){	//in case 404 doesn't exist
@@ -78,6 +80,14 @@ public class ServerUtil {
 			}
 			//send whatever file we ended up with
 			try{
+				//prepend response with status code and protocal
+				final Charset ASCII = Charset.forName("ASCII");
+
+				String headerS = status+" HTTP/1.1\n".getBytes(ASCII);
+				byte[] header = headerS.getBytes();
+				output.write(header);
+				output.flush();
+
 				//write file to a byte array
 				int n;
 				//continue writing from fileStream onto outBuff until fileStream is out of data
@@ -118,6 +128,7 @@ public class ServerUtil {
 		int start = inBuff.indexOf("/");
 		//bad request
 		if (start == -1){
+			status = "400 Bad Request";
 			return "400.html";
 		}
 		int end = inBuff.indexOf(" ", start);
@@ -133,6 +144,11 @@ public class ServerUtil {
 			filename = inBuff.substring(start);
 		}
 		return filename;
+	}
+
+	int writeToClient(String msg){
+		System.out.println("TODO impliment method stub...");
+		return -1;
 	}
 
 }
