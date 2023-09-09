@@ -45,26 +45,17 @@ public class ServerUtil {
 		catch (IOException e) {
 			System.out.println(e);
 		}
-		
 		//display the transmission
 		System.out.printf("[CLIENT]: %s\n", inBuff);
+
 
 		//GET requests
 		if (inBuff.startsWith("GET")){
 			String filename = "";
-			try{
-				//make a substring of just "[resource]", and ending at the newline or space
-				int start = inBuff.indexOf("/");
-				int end = inBuff.indexOf(" ", start);
-				char[] checklist = {' ', '\n'};
-				for(int i = 0; end == -1 && i < checklist.length; ++i){
-					end = inBuff.indexOf(checklist[i], start);
-				}
-				if(end != -1){
-					filename = inBuff.substring(start, end);
-				} else{
-					filename = inBuff.substring(start);
-				}
+			try{				
+				//turn inBuff into the requested resource
+				filename = requestResource();
+
 				//try to open and read the requested resource
 				File resource = new File(resourceFolder+filename);
 				//System.out.println("files"+filename);
@@ -115,6 +106,29 @@ public class ServerUtil {
 		} catch(IOException e){
 			System.out.printf("Error when attempting to close Listening Socket: %s", e);
 		}
+	}
+
+	//returns a substring of just "/[resource]", and ending at the newline or space
+	String requestResource (){
+		String filename;
+		int start = inBuff.indexOf("/");
+		//bad request
+		if (start == -1){
+			return "400.html";
+		}
+		int end = inBuff.indexOf(" ", start);
+		char[] checklist = {' ', '\n'};
+		//check for every item in checklist, in order
+		for(int i = 0; end == -1 && i < checklist.length; ++i){
+			end = inBuff.indexOf(checklist[i], start);
+		}
+		//if there's no space or newline, we consider everything after the '/' to be part of the resource
+		if(end != -1){
+			filename = inBuff.substring(start, end);
+		} else{
+			filename = inBuff.substring(start);
+		}
+		return filename;
 	}
 
 }
