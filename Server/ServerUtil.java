@@ -55,6 +55,9 @@ public class ServerUtil {
 			try{				
 				//turn inBuff into the requested resource
 				filename = requestResource();
+				if (filename == "/"){
+					filename = "/index.html";
+				}
 
 				//try to open and read the requested resource
 				File resource = new File(resourceFolder+filename);
