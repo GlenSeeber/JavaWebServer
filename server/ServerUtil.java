@@ -79,28 +79,7 @@ public class ServerUtil {
 				System.out.println("File couldn't be found, sending error to client");
 			}
 			//send whatever file we ended up with
-			try{
-				//prepend response with status code and protocal
-				/*
-				final Charset ASCII = Charset.forName("ASCII");
-
-				String headerS = status+" HTTP/1.1\n".getBytes(ASCII);
-				byte[] header = headerS.getBytes();
-				output.write(header);
-				output.flush();
-				*/
-
-				//write file to a byte array
-				int n;
-				//continue writing from fileStream onto outBuff until fileStream is out of data
-				while((n = fileStream.read(outBuff) ) > 0){
-					//write n bytes to output (the socket/client)
-					output.write(outBuff, 0, n);
-					output.flush();
-				}
-			}catch(IOException e){
-				System.out.println(e);
-			}
+			sendFile();
 		}
 
 		//close file streams
@@ -148,9 +127,31 @@ public class ServerUtil {
 		return filename;
 	}
 
-	int writeToClient(String msg){
-		System.out.println("TODO impliment method stub...");
-		return -1;
+	int sendFile(){
+		try{
+			//prepend response with status code and protocal
+			/*
+			final Charset ASCII = Charset.forName("ASCII");
+			
+			String headerS = status+" HTTP/1.1\n".getBytes(ASCII);
+			byte[] header = headerS.getBytes();
+			output.write(header);
+			output.flush();
+			*/
+			
+			//write file to a byte array
+			int n;
+			//continue writing from fileStream onto outBuff until fileStream is out of data
+			while((n = fileStream.read(outBuff) ) > 0){
+				//write n bytes to output (the socket/client)
+				output.write(outBuff, 0, n);
+				output.flush();
+			}
+			return 0;
+		}catch(IOException e){
+			System.out.println(e);
+			return -1;
+		}
 	}
 
 }
