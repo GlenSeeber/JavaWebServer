@@ -81,12 +81,14 @@ public class ServerUtil {
 			//send whatever file we ended up with
 			try{
 				//prepend response with status code and protocal
+				/*
 				final Charset ASCII = Charset.forName("ASCII");
 
 				String headerS = status+" HTTP/1.1\n".getBytes(ASCII);
 				byte[] header = headerS.getBytes();
 				output.write(header);
 				output.flush();
+				*/
 
 				//write file to a byte array
 				int n;
