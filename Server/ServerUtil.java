@@ -55,9 +55,10 @@ public class ServerUtil {
 			try{				
 				//turn inBuff into the requested resource
 				filename = requestResource();
-				if (filename == "/"){
+				if (filename.equals("/")){
 					filename = "/index.html";
 				}
+				System.out.println("requesting file: " + filename);
 
 				//try to open and read the requested resource
 				File resource = new File(resourceFolder+filename);
